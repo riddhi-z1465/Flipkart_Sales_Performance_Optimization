@@ -167,6 +167,12 @@ section[data-testid="stSidebar"] {
 @st.cache_data
 def load_data(nrows=None):
     """Load only required columns with compact dtypes for faster IO."""
+    csv_path = Path("Sales.csv")
+    if not csv_path.exists():
+        raise FileNotFoundError(
+            "Sales.csv not found in project root. Upload Sales.csv or provide a prepared sales_preprocessed.pkl."
+        )
+
     use_cols = [
         "dim_customer_key",
         "procured_quantity",
@@ -185,7 +191,7 @@ def load_data(nrows=None):
         "total_weighted_landing_price": "float32",
     }
     return pd.read_csv(
-        "Sales.csv",
+        csv_path,
         usecols=use_cols,
         dtype=dtype_map,
         parse_dates=["date_"],
@@ -272,11 +278,18 @@ def get_or_build_dataset():
     csv_path = Path("Sales.csv")
     cache_path = Path("sales_preprocessed.pkl")
 
-    if cache_path.exists() and cache_path.stat().st_mtime >= csv_path.stat().st_mtime:
-        try:
-            return pd.read_pickle(cache_path)
-        except Exception:
-            pass
+    if cache_path.exists():
+        # If raw CSV is unavailable (common on cloud deploy), serve from cached pickle.
+        if (not csv_path.exists()) or cache_path.stat().st_mtime >= csv_path.stat().st_mtime:
+            try:
+                return pd.read_pickle(cache_path)
+            except Exception:
+                pass
+
+    if not csv_path.exists():
+        raise FileNotFoundError(
+            "Missing dataset. Add Sales.csv to the app root, or ship sales_preprocessed.pkl."
+        )
 
     raw_df = load_data()
     processed_df = preprocess_data(raw_df)
@@ -339,12 +352,36 @@ def get_or_build_overview_snapshot():
     return snapshot
 
 
+def show_missing_data_help(error):
+    st.error(f"Dataset not found: {error}")
+    st.markdown(
+        """
+        ### How to fix
+        1. Add `Sales.csv` to the repository root (same folder as `app.py`), then redeploy.
+        2. Or upload a prebuilt `sales_preprocessed.pkl` to the repository root.
+        3. Reboot the Streamlit app after files are available.
+        """
+    )
+    st.stop()
+
+
 def get_df():
     """Lazy-load full dataset only when a page needs detailed analysis."""
     if "df_cache" not in st.session_state:
-        with st.spinner("Loading full dataset..."):
-            st.session_state["df_cache"] = get_or_build_dataset()
+        try:
+            with st.spinner("Loading full dataset..."):
+                st.session_state["df_cache"] = get_or_build_dataset()
+        except FileNotFoundError as error:
+            show_missing_data_help(error)
     return st.session_state["df_cache"]
+
+
+def get_overview():
+    """Load overview snapshot with graceful handling when dataset files are missing."""
+    try:
+        return get_or_build_overview_snapshot()
+    except FileNotFoundError as error:
+        show_missing_data_help(error)
 
 
 def get_model_metrics():
@@ -411,7 +448,7 @@ def dark_layout(fig, title_size=15, height=None, **kwargs):
     return fig
 
 if page == "📊 Overview":
-    overview = get_or_build_overview_snapshot()
+    overview = get_overview()
     kpis = overview["kpis"]
 
     st.markdown('<div class="header-title">📊 Flipkart Sales Dashboard</div>', unsafe_allow_html=True)
