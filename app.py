@@ -626,7 +626,7 @@ elif page == "📈 EDA":
         col1, col2 = st.columns(2)
         
         with col1:
-            monthly_data = df.groupby("Month").agg({"Revenue": "sum", "Quantity": "avg"}).reset_index()
+            monthly_data = df.groupby("Month").agg({"Revenue": "sum", "Quantity": "mean"}).reset_index()
             fig = px.line(monthly_data, x="Month", y="Revenue",
                          title="Revenue by Month",
                          markers=True, line_shape="spline",
@@ -854,7 +854,6 @@ elif page == "👥 Clustering":
     """, unsafe_allow_html=True)
     
     cust_df = prepare_customer_df(df)
-    plot_cust_df = sample_data(cust_df, n=12_000)
     
     # Clustering Configuration
     st.markdown('<div class="section-header">⚙️ Clustering Configuration</div>', unsafe_allow_html=True)
@@ -876,6 +875,7 @@ elif page == "👥 Clustering":
     X_scaled = scaler.fit_transform(X)
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     cust_df["Cluster"] = kmeans.fit_predict(X_scaled)
+    plot_cust_df = sample_data(cust_df, n=12_000)
     
     # Cluster Statistics
     st.markdown('<div class="section-header">📊 Cluster Statistics</div>', unsafe_allow_html=True)
