@@ -165,12 +165,24 @@ section[data-testid="stSidebar"] {
 """, unsafe_allow_html=True)
 
 @st.cache_data
+def resolve_csv_path():
+    """Pick an available CSV source, preferring full dataset."""
+    full_csv = Path("Sales.csv")
+    sample_csv = Path("Sales_sample.csv")
+    if full_csv.exists():
+        return full_csv
+    if sample_csv.exists():
+        return sample_csv
+    return None
+
+
+@st.cache_data
 def load_data(nrows=None):
     """Load only required columns with compact dtypes for faster IO."""
-    csv_path = Path("Sales.csv")
-    if not csv_path.exists():
+    csv_path = resolve_csv_path()
+    if csv_path is None:
         raise FileNotFoundError(
-            "Sales.csv not found in project root. Upload Sales.csv or provide a prepared sales_preprocessed.pkl."
+            "No CSV dataset found. Add Sales.csv or Sales_sample.csv to the project root, or provide sales_preprocessed.pkl."
         )
 
     use_cols = [
@@ -275,20 +287,20 @@ def preprocess_data(df):
 @st.cache_data
 def get_or_build_dataset():
     """Persist preprocessed dataframe to disk for fast app restarts."""
-    csv_path = Path("Sales.csv")
+    csv_path = resolve_csv_path()
     cache_path = Path("sales_preprocessed.pkl")
 
     if cache_path.exists():
         # If raw CSV is unavailable (common on cloud deploy), serve from cached pickle.
-        if (not csv_path.exists()) or cache_path.stat().st_mtime >= csv_path.stat().st_mtime:
+        if (csv_path is None) or cache_path.stat().st_mtime >= csv_path.stat().st_mtime:
             try:
                 return pd.read_pickle(cache_path)
             except Exception:
                 pass
 
-    if not csv_path.exists():
+    if csv_path is None:
         raise FileNotFoundError(
-            "Missing dataset. Add Sales.csv to the app root, or ship sales_preprocessed.pkl."
+            "Missing dataset. Add Sales.csv or Sales_sample.csv to the app root, or ship sales_preprocessed.pkl."
         )
 
     raw_df = load_data()
@@ -357,9 +369,10 @@ def show_missing_data_help(error):
     st.markdown(
         """
         ### How to fix
-        1. Add `Sales.csv` to the repository root (same folder as `app.py`), then redeploy.
-        2. Or upload a prebuilt `sales_preprocessed.pkl` to the repository root.
-        3. Reboot the Streamlit app after files are available.
+        1. Add `Sales_sample.csv` (recommended for cloud deploy) to the repository root.
+        2. Or add full `Sales.csv` to the repository root if your hosting allows it.
+        3. Or upload a prebuilt `sales_preprocessed.pkl` to the repository root.
+        4. Reboot the Streamlit app after files are available.
         """
     )
     st.stop()

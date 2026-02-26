@@ -13,6 +13,7 @@ __pycache__/
 *.zip
 *.pkl
 *.csv
+!Sales_sample.csv
 
 # macOS
 .DS_Store
