@@ -6,6 +6,10 @@ This project analyzes Flipkart sales data to optimize business performance using
 
 The interactive Streamlit dashboard provides visualizations, predictive modeling, and business intelligence for data-driven decision-making in e-commerce sales optimization.
 
+## 🌐 Live Demo
+
+Streamlit App: [https://flipkartsalesperformanceoptimization-d3ivpuwumk8myxjmrcdbfr.streamlit.app/](https://flipkartsalesperformanceoptimization-d3ivpuwumk8myxjmrcdbfr.streamlit.app/)
+
 ---
 
 # 📌 Business Problem Statement
@@ -218,6 +222,10 @@ Revenue = β₀ + β₁(Quantity) + β₂(Discount) + β₃(Month) + ε
 ---
 
 # 🌐 Deployment & Usage
+
+### Live Deployment (Streamlit Cloud)
+
+- App URL: [https://flipkartsalesperformanceoptimization-d3ivpuwumk8myxjmrcdbfr.streamlit.app/](https://flipkartsalesperformanceoptimization-d3ivpuwumk8myxjmrcdbfr.streamlit.app/)
 
 ### Local Deployment with Streamlit
 
