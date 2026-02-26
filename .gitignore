@@ -1,0 +1,23 @@
+# Kaggle credentials (sensitive - never push!)
+kaggle.json
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Large binary/data files
+*.zip
+*.pkl
+*.csv
+
+# macOS
+.DS_Store
+
+# Virtual environments
+venv/
+.env/
+env/

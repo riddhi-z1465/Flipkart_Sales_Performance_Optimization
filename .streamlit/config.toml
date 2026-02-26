@@ -1,0 +1,9 @@
+[client]
+maxMessageSize = 500
+
+[logger]
+level = "warning"
+
+[server]
+maxUploadSize = 200
+enableXsrfProtection = true
